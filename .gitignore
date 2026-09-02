@@ -1,0 +1,14 @@
+# Git Ignore
+.DS_Store
+*.log
+*.swp
+*.swo
+*~
+.env
+.env.local
+node_modules/
+dist/
+build/
+.idea/
+.vscode/
+*.sublime-workspace
