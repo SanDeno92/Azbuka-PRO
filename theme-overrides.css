@@ -1,0 +1,24 @@
+
+/* Azbuka PRO – Theme Overrides für Tailwind Arbitrary Classes – muss NACH Tailwind geladen werden */
+html, body, #root { background-color: var(--theme-bg) !important; }
+body {
+  background: radial-gradient(1200px 600px at 15% -10%, rgba(var(--theme-primary-rgb),0.18) 0%, transparent 60%),
+              radial-gradient(900px 500px at 85% 0%, rgba(var(--theme-primary-rgb),0.12) 0%, transparent 55%),
+              linear-gradient(180deg, var(--theme-bg) 0%, color-mix(in srgb, var(--theme-bg) 88%, black) 100%) !important;
+}
+#root > div, .min-h-screen { background: transparent !important; }
+
+[class*="bg-[#0A1E0A]"], [class*="bg-[rgba(10,30,10"], [class*="bg-black/80"] { background-color: var(--theme-bg) !important; }
+[class*="bg-[#0E1E0E"]], [class*="bg-[#111f11]"] { background-color: var(--theme-panel) !important; }
+[class*="bg-[#1e2a1e]"] { background-color: var(--theme-panel-alt) !important; }
+
+[class*="bg-[#D4FF00]"] { background-color: var(--theme-primary) !important; }
+[class*="bg-[#D4FF00]/10"] { background-color: rgba(var(--theme-primary-rgb),0.10) !important; }
+[class*="bg-[#D4FF00]/15"] { background-color: rgba(var(--theme-primary-rgb),0.15) !important; }
+[class*="text-[#D4FF00]"] { color: var(--theme-primary) !important; }
+[class*="border-[#D4FF00]"] { border-color: rgba(var(--theme-primary-rgb),0.28) !important; }
+[class*="shadow-[0_0_18px_rgba(212"], [class*="shadow-[0_0_20px_rgba(212"], [class*="shadow-[0_0_30px_rgba(212"] { box-shadow: 0 0 20px rgba(var(--theme-primary-rgb),0.35) !important; }
+
+[class*="bg-[#7AFF8A]"] { background-color: var(--theme-accent) !important; }
+[class*="text-[#7AFF8A]"] { color: var(--theme-accent) !important; }
+[class*="bg-[#FF6B9D]"] { background-color: var(--theme-danger) !important; }

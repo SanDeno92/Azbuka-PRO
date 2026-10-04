@@ -1,0 +1,27 @@
+/* Spiele Tab braucht nur wortsuche.css - wiederverwendet */
+/* Falls du spiele.css separat willst, kopiere einfach wortsuche.css */
+@import url("wortsuche.css");
+
+/* Extra Anpassungen für Haupt-Tab Vollbild */
+#spieleView {
+  animation: spieleIn 0.25s ease;
+}
+@keyframes spieleIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Bottom Nav Fix für 6 Items - falls nötig */
+#spieleTabBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: rgba(255,255,255,0.5);
+  transition: color 0.2s;
+}
+#spieleTabBtn.active,
+#spieleTabBtn.az-active {
+  color: var(--theme-primary, #D4FF00) !important;
+}

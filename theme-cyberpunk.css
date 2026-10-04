@@ -1,0 +1,211 @@
+/* ============================================================
+   Azbuka PRO – Cyberpunk-Theme (aktiv über html[data-theme-id="cyberpunk"])
+   Farben kommen aus theme-system.js; hier: Neon-Look + bewegte Lichter.
+   ============================================================ */
+
+#azCyberFx { display: none; }
+
+/* --- Bewegte Lichteffekte: liegen als Lichtschicht über der App (Screen-Blend, klickdurchlässig) --- */
+html[data-theme-id="cyberpunk"] #azCyberFx {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+#azCyberFx .cfx-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  will-change: transform;
+}
+#azCyberFx .cfx-b1 {
+  width: 70vmax; height: 70vmax; top: -30vmax; left: -25vmax; opacity: 0.30;
+  background: radial-gradient(circle, #00F0FF 0%, transparent 65%);
+  animation: cfxDrift1 18s ease-in-out infinite alternate;
+}
+#azCyberFx .cfx-b2 {
+  width: 70vmax; height: 70vmax; right: -30vmax; bottom: -30vmax; opacity: 0.30;
+  background: radial-gradient(circle, #FF2BD6 0%, transparent 65%);
+  animation: cfxDrift2 22s ease-in-out infinite alternate;
+}
+#azCyberFx .cfx-b3 {
+  width: 50vmax; height: 50vmax; top: 30%; left: 30%; opacity: 0.20;
+  background: radial-gradient(circle, #7B2CFF 0%, transparent 65%);
+  animation: cfxDrift3 26s ease-in-out infinite alternate;
+}
+
+/* Schräge Lichtstrahlen, die über den Bildschirm wandern */
+#azCyberFx .cfx-beam {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -30vw;
+  width: 16vw;
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.16), rgba(255, 43, 214, 0.12), transparent);
+  transform: skewX(-20deg);
+  animation: cfxBeam 9s linear infinite;
+}
+#azCyberFx .cfx-beam2 {
+  width: 9vw;
+  background: linear-gradient(90deg, transparent, rgba(255, 43, 214, 0.18), rgba(252, 238, 10, 0.10), transparent);
+  animation-duration: 14s;
+  animation-delay: -5s;
+}
+
+/* Scan-Balken von oben nach unten + feine Scanlines */
+#azCyberFx .cfx-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -140px;
+  height: 140px;
+  background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.12), transparent);
+  animation: cfxScan 7s linear infinite;
+}
+#azCyberFx::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px);
+}
+
+@keyframes cfxDrift1 { to { transform: translate(35vw, 25vh) scale(1.25); } }
+@keyframes cfxDrift2 { to { transform: translate(-40vw, -20vh) scale(1.2); } }
+@keyframes cfxDrift3 { 50% { transform: translate(-20vw, 25vh) scale(1.3); } to { transform: translate(20vw, -20vh) scale(0.9); } }
+@keyframes cfxBeam { from { transform: translateX(0) skewX(-20deg); } to { transform: translateX(170vw) skewX(-20deg); } }
+@keyframes cfxScan { to { transform: translateY(calc(100vh + 140px)); } }
+
+/* --- Hintergrund: Neon-Raster, das langsam wandert --- */
+html[data-theme-id="cyberpunk"] body {
+  background:
+    linear-gradient(rgba(0, 240, 255, 0.055) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(90deg, rgba(255, 43, 214, 0.045) 1px, transparent 1px) 0 0 / 48px 48px,
+    radial-gradient(1000px 600px at 10% -10%, rgba(0, 240, 255, 0.20), transparent 60%),
+    radial-gradient(900px 600px at 95% 10%, rgba(255, 43, 214, 0.18), transparent 55%),
+    linear-gradient(180deg, #080314 0%, #04010A 100%) !important;
+  animation: cfxGrid 24s linear infinite;
+}
+@keyframes cfxGrid {
+  from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+  to   { background-position: 0 48px, 48px 0, 0 0, 0 0, 0 0; }
+}
+
+/* Overlays (Shop/Profil/Spiele) bekommen denselben Hintergrund wie die Seite – nicht transparent,
+   sonst scheint die darunterliegende Ansicht durch. Die Lichtschicht liegt eh darüber. */
+html[data-theme-id="cyberpunk"] .az-view-overlay {
+  background:
+    linear-gradient(rgba(0, 240, 255, 0.055) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(90deg, rgba(255, 43, 214, 0.045) 1px, transparent 1px) 0 0 / 48px 48px,
+    radial-gradient(1000px 600px at 10% -10%, rgba(0, 240, 255, 0.20), transparent 60%),
+    radial-gradient(900px 600px at 95% 10%, rgba(255, 43, 214, 0.18), transparent 55%),
+    linear-gradient(180deg, #080314 0%, #04010A 100%) !important;
+  animation: cfxGrid 24s linear infinite;
+}
+
+/* --- Neon-Flächen --- */
+html[data-theme-id="cyberpunk"] .az-view-inner,
+html[data-theme-id="cyberpunk"] .az-card,
+html[data-theme-id="cyberpunk"] .az-shop-item,
+html[data-theme-id="cyberpunk"] .az-stat-box,
+html[data-theme-id="cyberpunk"] .prof-card,
+html[data-theme-id="cyberpunk"] .news-card,
+html[data-theme-id="cyberpunk"] .card-front,
+html[data-theme-id="cyberpunk"] .card-back,
+html[data-theme-id="cyberpunk"] .ws-wrap,
+html[data-theme-id="cyberpunk"] .ws-side {
+  border-color: rgba(0, 240, 255, 0.38) !important;
+  box-shadow: 0 0 0 1px rgba(0, 240, 255, 0.10), 0 0 18px rgba(0, 240, 255, 0.18), inset 0 0 26px rgba(255, 43, 214, 0.07) !important;
+}
+
+html[data-theme-id="cyberpunk"] .az-view-inner,
+html[data-theme-id="cyberpunk"] .az-shop-item {
+  animation: cfxBorder 5s ease-in-out infinite alternate;
+}
+@keyframes cfxBorder {
+  from { border-color: rgba(0, 240, 255, 0.45); }
+  to   { border-color: rgba(255, 43, 214, 0.55); }
+}
+
+/* Überschriften mit Neon-Glow und kurzem Glitch */
+html[data-theme-id="cyberpunk"] .az-view-inner h1,
+html[data-theme-id="cyberpunk"] .az-head h1 {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 2px 0 rgba(255, 43, 214, 0.75), -2px 0 rgba(0, 240, 255, 0.75), 0 0 16px rgba(0, 240, 255, 0.45);
+  animation: cfxGlitch 6s steps(1) infinite;
+}
+@keyframes cfxGlitch {
+  0%, 92%, 100% { transform: none; }
+  93% { transform: translate(-2px, 1px); }
+  95% { transform: translate(3px, -1px); }
+  97% { transform: translate(-1px, 0); }
+}
+
+html[data-theme-id="cyberpunk"] .az-shop-title,
+html[data-theme-id="cyberpunk"] .az-learn-section {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
+}
+
+/* Icons & Buttons: Cyan-Magenta-Verlauf mit Glow */
+html[data-theme-id="cyberpunk"] .az-shop-icon {
+  background: linear-gradient(135deg, #00F0FF, #FF2BD6) !important;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.55);
+}
+html[data-theme-id="cyberpunk"] .prof-save,
+html[data-theme-id="cyberpunk"] .az-btn-primary,
+html[data-theme-id="cyberpunk"] .ws-new,
+html[data-theme-id="cyberpunk"] .ws-db-active,
+html[data-theme-id="cyberpunk"] .az-btn.az-theme-buy:not(:disabled),
+html[data-theme-id="cyberpunk"] .az-btn.az-shop-buy:not(:disabled),
+html[data-theme-id="cyberpunk"] .tabs-extra-tab.active,
+html[data-theme-id="cyberpunk"] .tabs-extra-btn {
+  background: linear-gradient(90deg, #00F0FF, #FF2BD6) !important;
+  color: #080314 !important;
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.5), 0 0 26px rgba(255, 43, 214, 0.35) !important;
+}
+
+/* Navigation */
+html[data-theme-id="cyberpunk"] .az-bottom-nav {
+  border-top: 1px solid rgba(0, 240, 255, 0.5) !important;
+  box-shadow: 0 -6px 26px rgba(0, 240, 255, 0.22), 0 -1px 0 rgba(255, 43, 214, 0.5) !important;
+}
+html[data-theme-id="cyberpunk"] .az-bottom-nav button.active {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.9);
+}
+html[data-theme-id="cyberpunk"] .az-bottom-nav button.active span {
+  filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.9));
+}
+html[data-theme-id="cyberpunk"] header {
+  border-bottom: 1px solid rgba(0, 240, 255, 0.45) !important;
+  box-shadow: 0 6px 24px rgba(0, 240, 255, 0.15);
+}
+
+/* Fortschrittsbalken & Wortsuche-Treffer */
+html[data-theme-id="cyberpunk"] .az-progress,
+html[data-theme-id="cyberpunk"] .ws-progress-fill {
+  background: linear-gradient(90deg, #00F0FF, #7B2CFF, #FF2BD6) !important;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+}
+html[data-theme-id="cyberpunk"] .ws-cell.ws-sel,
+html[data-theme-id="cyberpunk"] .ws-cell.ws-found {
+  background: linear-gradient(135deg, #00F0FF, #FF2BD6) !important;
+  color: #080314 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #azCyberFx .cfx-blob,
+  #azCyberFx .cfx-beam,
+  #azCyberFx .cfx-scan,
+  html[data-theme-id="cyberpunk"] body,
+  html[data-theme-id="cyberpunk"] .az-view-overlay,
+  html[data-theme-id="cyberpunk"] .az-view-inner,
+  html[data-theme-id="cyberpunk"] .az-shop-item,
+  html[data-theme-id="cyberpunk"] .az-view-inner h1,
+  html[data-theme-id="cyberpunk"] .az-head h1 {
+    animation: none !important;
+  }
+}

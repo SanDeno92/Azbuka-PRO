@@ -24,7 +24,150 @@ function normalizeName(name) {
 
 let leaderboardCache = [];
 let lastLeaderboardFetch = 0;
+const LEADERBOARD_MODE_KEY = 'azbuka_lb_mode';
+const TASK_LEADERBOARD_KEY = 'azbuka_aufgaben_weekly_leaderboard';
 const browserFetch = window.fetch.bind(window);
+
+function getLeaderboardMode() {
+  try {
+    const stored = localStorage.getItem(LEADERBOARD_MODE_KEY);
+    return stored === 'aufgaben' ? 'aufgaben' : 'quiz';
+  } catch (e) {
+    return 'quiz';
+  }
+}
+
+function setLeaderboardMode(mode) {
+  const next = mode === 'aufgaben' ? 'aufgaben' : 'quiz';
+  try { localStorage.setItem(LEADERBOARD_MODE_KEY, next); } catch (e) {}
+  return next;
+}
+
+function getLeaderboardRowsForMode(mode) {
+  const chosen = mode === 'aufgaben' ? 'aufgaben' : 'quiz';
+  const key = chosen === 'aufgaben' ? TASK_LEADERBOARD_KEY : 'azbuka_leaderboard';
+
+  try {
+    const raw = localStorage.getItem(key);
+    const rows = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(rows)) return [];
+    return rows
+      .filter((row) => row && row.name)
+      .sort((a, b) => (Number(b.xp) || 0) - (Number(a.xp) || 0))
+      .slice(0, 50);
+  } catch (e) {
+    return [];
+  }
+}
+
+function buildLeaderboardToggleMarkup(activeMode) {
+  const modes = [
+    { key: 'quiz', label: 'Quiz XP' },
+    { key: 'aufgaben', label: 'Aufgaben XP' }
+  ];
+
+  return `
+    <div id="azbukaLeaderboardToggle" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto 16px;max-width:420px;position:relative;z-index:20;">
+      ${modes.map((entry) => {
+        const isActive = activeMode === entry.key;
+        return `
+          <button type="button" data-mode="${entry.key}" style="border-radius:999px;padding:8px 14px;font-size:12px;font-weight:800;letter-spacing:0.08em;border:1px solid ${isActive ? 'var(--theme-primary)' : 'rgba(255,255,255,0.12)'};background:${isActive ? 'linear-gradient(180deg, var(--theme-primary), color-mix(in srgb, var(--theme-primary) 85%, black))' : 'rgba(255,255,255,0.04)'};color:${isActive ? '#0b120b' : '#fff'};cursor:pointer;transition:all .2s ease;">${entry.label}</button>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderLeaderboardViewFromMode() {
+  const view = document.getElementById('ranglisteView');
+  if (!view) return;
+
+  const mode = getLeaderboardMode();
+  const rows = getLeaderboardRowsForMode(mode);
+  const heading = mode === 'aufgaben' ? 'Aufgaben XP - Top 50' : 'Bestenliste - Top 50';
+  const emptyText = mode === 'aufgaben' ? 'Noch keine Aufgaben-XP Einträge - löse Aufgaben, um auf der Liste zu erscheinen.' : 'Noch keine Einträge - starte ein Quiz';
+
+  const top3 = rows.slice(0, 3);
+  const topHtml = top3.map((entry, idx) => {
+    const medal = idx === 0 ? 'var(--theme-primary)' : idx === 1 ? '#D9D9D9' : '#C08A3C';
+    return `
+      <div class="azbuka-rank-card" style="background:rgba(var(--theme-panel-rgb),0.88);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 10px;text-align:center;min-width:0;">
+        <div style="width:28px;height:28px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;margin-bottom:8px;background:${medal};color:#0b120b;">${idx + 1}</div>
+        <div style="font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${(entry.name || 'Anonym').slice(0, 18)}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px;">Lvl ${entry.lvl || 1} • ${entry.correct || 0} richtig</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;">${(Number(entry.xp) || 0).toLocaleString()} XP</div>
+      </div>
+    `;
+  }).join('');
+
+  const rowsHtml = rows.length ? rows.map((entry, idx) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;border-radius:12px;border:1px solid rgba(255,255,255,0.08);padding:12px 14px;background:rgba(var(--theme-panel-rgb),0.85);">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+        <div style="width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;background:${idx === 0 ? 'var(--theme-primary)' : 'rgba(255,255,255,0.08)'};color:${idx === 0 ? '#0b120b' : '#fff'};flex-shrink:0;">${idx + 1}</div>
+        <div style="min-width:0;">
+          <div style="font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${(entry.name || 'Anonym').slice(0, 18)}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.48);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Lvl ${entry.lvl || 1} • ${entry.correct || 0} richtig</div>
+        </div>
+      </div>
+      <div style="font-size:11px;font-weight:900;border-radius:999px;padding:6px 10px;background:rgba(255,255,255,0.08);color:#fff;white-space:nowrap;">${(Number(entry.xp) || 0).toLocaleString()} XP</div>
+    </div>
+  `).join('') : `<div style="border-radius:14px;background:rgba(var(--theme-panel-rgb),0.85);border:1px solid rgba(255,255,255,0.08);padding:24px;text-align:center;color:rgba(255,255,255,0.55);">${emptyText}</div>`;
+
+  view.innerHTML = `
+    ${buildLeaderboardToggleMarkup(mode)}
+    <h1 style="font-size:28px;font-weight:900;letter-spacing:-0.04em;line-height:1.1;margin:0 0 8px;">${heading}</h1>
+    <p style="font-size:13px;color:rgba(255,255,255,0.52);margin:0 0 18px;line-height:1.5;">Top 50 nach XP - ${mode === 'aufgaben' ? 'Aufgaben XP' : 'Quiz XP'} </p>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px;">${topHtml || '<div></div>'}</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">${rowsHtml}</div>
+    <p style="margin-top:18px;text-align:center;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:0.14em;">🌍 Global gespeichert</p>
+  `;
+
+  const toggle = view.querySelector('#azbukaLeaderboardToggle');
+  if (toggle) {
+    toggle.querySelectorAll('button[data-mode]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const next = setLeaderboardMode(button.dataset.mode || 'quiz');
+        renderLeaderboardViewFromMode();
+        try {
+          window.dispatchEvent(new CustomEvent('azbuka-leaderboard-mode-change', { detail: { mode: next } }));
+        } catch (e) {}
+        if (typeof fetchLeaderboard === 'function') fetchLeaderboard();
+      });
+    });
+  }
+}
+
+window.addEventListener('azbuka-leaderboard-mode-change', () => {
+  try {
+    renderLeaderboardViewFromMode();
+    const key = getLeaderboardStorageKey();
+    const raw = localStorage.getItem(key);
+    if (!raw) return;
+    const rows = JSON.parse(raw);
+    if (Array.isArray(rows)) {
+      const appState = window.__AZBUKA_APP_STATE__ || null;
+      if (appState && typeof appState.setLeaderboard === 'function') {
+        appState.setLeaderboard(rows);
+      }
+    }
+  } catch (e) {}
+});
+
+function refreshLeaderboardModeUi() {
+  renderLeaderboardViewFromMode();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(refreshLeaderboardModeUi, 150);
+    setTimeout(refreshLeaderboardModeUi, 800);
+  }, { once: true });
+} else {
+  setTimeout(refreshLeaderboardModeUi, 150);
+  setTimeout(refreshLeaderboardModeUi, 800);
+}
+
+window.azbukaLeaderboard = { getMode: getLeaderboardMode, setMode: setLeaderboardMode };
 
 // Route the bundled app's legacy leaderboard path directly through Supabase.
 window.fetch = async (input, init) => {
@@ -50,6 +193,22 @@ window.fetch = async (input, init) => {
 };
 
 async function fetchLeaderboard() {
+  const mode = getLeaderboardMode();
+
+  if (mode === 'aufgaben') {
+    try {
+      const cached = JSON.parse(localStorage.getItem(TASK_LEADERBOARD_KEY) || '[]');
+      const rows = Array.isArray(cached) ? cached : [];
+      leaderboardCache = rows
+        .filter((row) => row && row.source === 'aufgaben')
+        .sort((a, b) => (Number(b.xp) || 0) - (Number(a.xp) || 0))
+        .slice(0, 50);
+      return leaderboardCache;
+    } catch (e) {
+      return [];
+    }
+  }
+
   const now = Date.now();
   if (now - lastLeaderboardFetch < 3000 && leaderboardCache.length > 0) {
     return leaderboardCache;
@@ -150,6 +309,33 @@ async function reserveName(name) {
 // Der Name wurde bereits beim Speichern reserviert -> hier nur noch
 // die Punkte per PATCH aktualisieren, und nur wenn der neue Score besser ist.
 async function saveToLeaderboard(playerData) {
+  const mode = getLeaderboardMode();
+  if (mode === 'aufgaben') {
+    const cleanName = normalizeName(playerData && playerData.name);
+    if (!cleanName) return false;
+
+    const rows = JSON.parse(localStorage.getItem(TASK_LEADERBOARD_KEY) || '[]');
+    const nextRows = Array.isArray(rows) ? rows : [];
+    const entry = {
+      name: cleanName,
+      xp: Number(playerData.xp) || 0,
+      lvl: Math.max(1, Number(playerData.lvl) || 1),
+      correct: Math.max(0, Number(playerData.correct) || 0),
+      streak: Number(playerData.streak) || 0,
+      beststreak: Math.max(Number(playerData.bestStreak) || 0, Number(playerData.streak) || 0),
+      source: 'aufgaben',
+      weekKey: new Date().toISOString().slice(0, 10),
+      date: Date.now()
+    };
+
+    const filtered = nextRows.filter((row) => !(row && row.source === 'aufgaben' && row.name === cleanName));
+    filtered.push(entry);
+    const sorted = filtered.sort((a, b) => (Number(b.xp) || 0) - (Number(a.xp) || 0)).slice(0, 50);
+    localStorage.setItem(TASK_LEADERBOARD_KEY, JSON.stringify(sorted));
+    leaderboardCache = sorted;
+    return sorted;
+  }
+
   const { name, correct, xp, lvl, streak, bestStreak } = playerData;
   const cleanName = normalizeName(name);
 
